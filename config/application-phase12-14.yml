@@ -1,0 +1,4 @@
+# Merge into the existing application.yml. Do not replace unrelated settings.
+mybank:
+  opa:
+    url: ${OPA_URL:http://localhost:8181}

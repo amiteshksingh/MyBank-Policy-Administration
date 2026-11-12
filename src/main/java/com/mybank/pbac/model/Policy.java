@@ -25,6 +25,14 @@ public class Policy {
     private int priority = 100;
     private boolean enabled = true;
     private long version = 1;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "industry_id")
+    private Industry industry;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "guardrail_type")
+    private GuardrailType guardrailType = GuardrailType.OTHER;
+    @Column(name = "guardrail_subtype", length = 100)
+    private String guardrailSubtype;
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JoinColumn(name = "policy_id")
     @OrderBy("sequenceNo ASC")
@@ -107,6 +115,30 @@ public class Policy {
 
     public long getVersion() {
         return version;
+    }
+
+    public Industry getIndustry() {
+        return industry;
+    }
+
+    public void setIndustry(Industry v) {
+        industry = v;
+    }
+
+    public GuardrailType getGuardrailType() {
+        return guardrailType;
+    }
+
+    public void setGuardrailType(GuardrailType v) {
+        guardrailType = v == null ? GuardrailType.OTHER : v;
+    }
+
+    public String getGuardrailSubtype() {
+        return guardrailSubtype;
+    }
+
+    public void setGuardrailSubtype(String v) {
+        guardrailSubtype = v == null || v.isBlank() ? null : v.trim().toUpperCase();
     }
 
     public List<PolicyCondition> getConditions() {

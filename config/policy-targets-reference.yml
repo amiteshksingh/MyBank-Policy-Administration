@@ -1,0 +1,14 @@
+# Documentation/reference only. PolicyTargetBootstrap creates these records in H2.
+industries:
+  banking:
+    prompt: { decisionPath: /v1/data/pbac/prompt/decision, policyDataPath: /v1/data/mybank/runtime/banking/prompt }
+    tool:   { decisionPath: /v1/data/pbac/tool/result,       policyDataPath: /v1/data/mybank/runtime/banking/tool }
+    data:   { decisionPath: /v1/data/pbac/rag/decision,      policyDataPath: /v1/data/mybank/runtime/banking/data }
+    output: { decisionPath: /v1/data/pbac/output/decision,   policyDataPath: /v1/data/mybank/runtime/banking/output }
+    global: { decisionPath: /v1/data/pbac/authorize/decision,policyDataPath: /v1/data/mybank/runtime/banking/global }
+  hospitality:
+    prompt: { decisionPath: /v1/data/pbac/prompt/decision, policyDataPath: /v1/data/mybank/runtime/hospitality/prompt }
+    tool:   { decisionPath: /v1/data/pbac/tool/result,       policyDataPath: /v1/data/mybank/runtime/hospitality/tool }
+    data:   { decisionPath: /v1/data/pbac/rag/decision,      policyDataPath: /v1/data/mybank/runtime/hospitality/data }
+    output: { decisionPath: /v1/data/pbac/output/decision,   policyDataPath: /v1/data/mybank/runtime/hospitality/output }
+    global: { decisionPath: /v1/data/pbac/authorize/decision,policyDataPath: /v1/data/mybank/runtime/hospitality/global }

@@ -1,20 +1,98 @@
 <!doctype html>
-<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>OPA Policy Administration</title><link rel="stylesheet" href="/style.css"></head><body>
-<header><div><h1>OPA Policy Administration Point</h1><p>A centralized interface for managing PBAC policies</p></div><div id="opaBadge" class="status unknown">OPA checking...</div></header>
-<nav><button onclick="show('policies')">Policies</button><button onclick="show('deployments')">Deployments</button><button onclick="show('obligations')">Obligations</button><button onclick="show('attributes')">Attributes</button><button onclick="show('simulator')">Simulator</button></nav>
-<main>
-<section id="policies"><div class="bar"><h2>Policies</h2><div><button class="secondary" onclick="document.getElementById('regoFiles').click()">Import Rego</button> <button onclick="policyForm()">New Policy</button></div></div>
-<div class="card"><label for="regoFiles">Import one or more supported .rego files (up to 10 files, 1 MiB each)</label><input id="regoFiles" type="file" accept=".rego,text/plain" multiple onchange="importRego(this.files)"><div id="importStatus" role="status"></div></div><div id="policyList"></div><div id="policyEditor"></div></section>
-<section id="deployments" hidden><h2>OPA Deployments</h2><div class="deployment-grid">
-<div class="card"><h3>Runtime single-policy deployment</h3><p>Use each policy row's <b>Deploy</b> action to create or replace only that policy's runtime override in OPA. No OPA restart is required.</p><p>Use <b>Remove override</b> to return that policy to the bundle-managed version.</p></div>
-<div class="card"><h3>Full bundle deployment</h3><p>Publishes one snapshot containing the stable Rego evaluator and every enabled policy. OPA pulls and atomically activates the new revision on its next configured poll.</p><button onclick="deployBundle()">Publish Full Bundle</button> <button class="secondary" onclick="location='/api/bundle'">Download Bundle</button></div></div><pre id="deploymentOutput">No deployment requested.</pre></section>
-<section id="obligations" hidden><div class="bar"><h2>Obligations</h2><button onclick="obligationForm()">New Obligation</button></div><div id="obligationList"></div><div id="obligationEditor"></div></section>
-<section id="attributes" hidden><div class="bar"><h2>Context Attributes</h2><button onclick="attributeForm()">New Attribute</button></div><div id="attributeList"></div><div id="attributeEditor"></div></section>
-<section id="simulator" hidden><h2>Policy Simulator</h2><textarea id="simInput" rows="14">{
-  "subject": {"role": "kyc_analyst"},
-  "action": {"tool": "document_retrieval"},
-  "resource": {"classification": "sensitive"},
-  "context": {"ipAddress": "10.10.5.8", "country": "IN", "riskScore": 20}
-}</textarea><button onclick="simulate()">Evaluate</button><pre id="simOutput"></pre></section>
-</main><script src="/app.js"></script></body></html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>MyBank Policy Administration</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <header>
+        <div>
+            <h1>OPA Policy Administration Point</h1>
+            <p>Industry and guardrail-aware PBAC policy management</p>
+        </div>
+        <div id="opaBadge" class="status unknown">OPA checking...</div>
+    </header>
+    <nav><button onclick="show('policies')">Policies</button><button
+            onclick="show('industries')">Industries</button><button onclick="show('targets')">Targets</button><button
+            onclick="show('deployments')">Deployments</button><button
+            onclick="show('obligations')">Obligations</button><button
+            onclick="show('attributes')">Attributes</button><button onclick="show('simulator')">Simulator</button></nav>
+    <main>
+        <section id="policies">
+            <div class=bar>
+                <h2>Policies</h2><button onclick="policyForm()">New Policy</button>
+            </div>
+            <div class="card filters"><label>Industry<select id=industryFilter
+                        onchange=loadPolicies()></select></label><label>Guardrail<select id=guardrailFilter
+                        onchange=loadPolicies()>
+                        <option value="">All</option>
+                    </select></label><label>Status<select id=statusFilter onchange=loadPolicies()>
+                        <option value="">All</option>
+                        <option value=true>Enabled</option>
+                        <option value=false>Disabled</option>
+                    </select></label><label>Search<input id=policySearch oninput=debouncedPolicies()></label></div>
+            <div class=card>
+                <div class=row><label>Import industry<select id=importIndustry></select></label><label>Import
+                        guardrail<select id=importGuardrail onchange=toggleImportSubtype()></select></label><label
+                        id=importSubtypeWrap hidden>OTHER subtype<input id=importSubtype
+                            placeholder="MEMORY, MODEL, MCP_SERVER..."></label></div><input id=regoFiles type=file
+                    accept=".rego,text/plain" multiple><button onclick="importRego(regoFiles.files)">Import
+                    Rego</button>
+                <div id=importStatus></div>
+            </div>
+            <div id=policyList></div>
+            <div id=policyEditor></div>
+        </section>
+        <section id=industries hidden>
+            <div class=bar>
+                <h2>Industries</h2><button onclick="industryForm()">Add Industry</button>
+            </div>
+            <div id=industryList></div>
+            <div id=industryEditor></div>
+        </section>
+        <section id=targets hidden>
+            <div class=bar>
+                <h2>Policy Targets</h2><button onclick="targetForm()">Add Target</button>
+            </div>
+            <p class=hint>Metadata only in phases 1-11. Existing OPA/LangChain endpoints are not changed.</p>
+            <div id=targetList></div>
+            <div id=targetEditor></div>
+        </section>
+        <section id=deployments hidden>
+            <h2>OPA Deployments</h2>
+            <div class=card>
+                <p>Existing deployment APIs remain unchanged in phases 1-11.</p><button onclick="deployBundle()">Publish
+                    Full Bundle</button> <button class=secondary onclick="location='/api/bundle'">Download
+                    Bundle</button>
+            </div>
+            <pre id=deploymentOutput>No deployment requested.</pre>
+        </section>
+        <section id=obligations hidden>
+            <div class=bar>
+                <h2>Obligations</h2><button onclick="obligationForm()">New Obligation</button>
+            </div>
+            <div id=obligationList></div>
+            <div id=obligationEditor></div>
+        </section>
+        <section id=attributes hidden>
+            <div class=bar>
+                <h2>Context Attributes</h2><button onclick="attributeForm()">New Attribute</button>
+            </div>
+            <div id=attributeList></div>
+            <div id=attributeEditor></div>
+        </section>
+        <section id=simulator hidden>
+            <h2>Policy Simulator</h2><textarea id=simInput
+                rows=14>{"subject":{"role":"kyc_analyst"},"action":{"tool":"document_retrieval"},"resource":{"classification":"sensitive"},"context":{}}</textarea><button
+                onclick="simulate()">Evaluate</button>
+            <pre id=simOutput></pre>
+        </section>
+    </main>
+    <script src="/app.js"></script>
+</body>
+
+</html>

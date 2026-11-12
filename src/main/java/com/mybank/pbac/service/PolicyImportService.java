@@ -5,6 +5,9 @@ import com.mybank.pbac.model.AttributeDefinition;
 import com.mybank.pbac.model.Obligation;
 import com.mybank.pbac.model.Policy;
 import com.mybank.pbac.model.PolicyCondition;
+import com.mybank.pbac.model.Industry;
+import com.mybank.pbac.model.GuardrailType;
+import com.mybank.pbac.repository.IndustryRepository;
 import com.mybank.pbac.repository.AttributeDefinitionRepository;
 import com.mybank.pbac.repository.ObligationRepository;
 import com.mybank.pbac.repository.PolicyRepository;
@@ -31,18 +34,22 @@ public class PolicyImportService {
     private final ObligationRepository obligations;
     private final AttributeDefinitionRepository attributes;
     private final AuditService audit;
+    private final IndustryRepository industries;
 
     public PolicyImportService(RegoPolicyParser parser, PolicyRepository policies,
-            ObligationRepository obligations, AttributeDefinitionRepository attributes, AuditService audit) {
+            ObligationRepository obligations, AttributeDefinitionRepository attributes, AuditService audit, IndustryRepository industries) {
         this.parser = parser;
         this.policies = policies;
         this.obligations = obligations;
         this.attributes = attributes;
         this.audit = audit;
+        this.industries = industries;
     }
 
     @Transactional
-    public ImportResult importFiles(List<MultipartFile> files) {
+    public ImportResult importFiles(List<MultipartFile> files, Long industryId, GuardrailType guardrailType, String guardrailSubtype) {
+        Industry targetIndustry = industries.findById(industryId).orElseThrow(() -> new IllegalArgumentException("Industry not found"));
+        if (guardrailType == GuardrailType.OTHER && (guardrailSubtype == null || guardrailSubtype.isBlank())) throw new IllegalArgumentException("OTHER guardrail requires guardrailSubtype");
         if (files == null || files.isEmpty()) {
             throw new IllegalArgumentException("Select at least one .rego file");
         }
@@ -130,6 +137,9 @@ public class PolicyImportService {
             policy.setDescription(imported.description());
             policy.setEffect(imported.effect());
             policy.setPriority(100);
+            policy.setIndustry(targetIndustry);
+            policy.setGuardrailType(guardrailType);
+            policy.setGuardrailSubtype(guardrailSubtype);
             policy.setEnabled(true);
             policy.setObligations(policyObligations);
             List<PolicyCondition> conditions = new ArrayList<>();
