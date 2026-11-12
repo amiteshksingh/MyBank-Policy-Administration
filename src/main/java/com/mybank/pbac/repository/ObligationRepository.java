@@ -1,0 +1,1 @@
+package com.mybank.pbac.repository; import com.mybank.pbac.model.Obligation; import org.springframework.data.jpa.repository.JpaRepository; import java.util.*; public interface ObligationRepository extends JpaRepository<Obligation,Long>{ Optional<Obligation> findByCode(String code);}

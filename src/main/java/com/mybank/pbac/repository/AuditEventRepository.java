@@ -1,0 +1,1 @@
+package com.mybank.pbac.repository; import com.mybank.pbac.model.AuditEvent; import org.springframework.data.jpa.repository.JpaRepository; import java.util.*; public interface AuditEventRepository extends JpaRepository<AuditEvent,Long>{}

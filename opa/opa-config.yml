@@ -1,0 +1,13 @@
+services:
+  mybank_policy_admin:
+    # OPA must be able to resolve and reach this URL.
+    # When running OPA in Docker, localhost is the OPA container itself.
+    url: ${POLICY_ADMIN_URL:http://host.docker.internal:9090}
+
+bundles:
+  mybank:
+    service: mybank_policy_admin
+    resource: /api/bundle
+    polling:
+      min_delay_seconds: 2
+      max_delay_seconds: 5

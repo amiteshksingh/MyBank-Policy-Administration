@@ -1,0 +1,1 @@
+package com.mybank.pbac.repository; import com.mybank.pbac.model.Policy; import org.springframework.data.jpa.repository.JpaRepository; import java.util.*; public interface PolicyRepository extends JpaRepository<Policy,Long>{ Optional<Policy> findByCode(String code);}

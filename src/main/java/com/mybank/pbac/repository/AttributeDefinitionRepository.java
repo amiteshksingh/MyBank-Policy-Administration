@@ -1,0 +1,1 @@
+package com.mybank.pbac.repository; import com.mybank.pbac.model.AttributeDefinition; import org.springframework.data.jpa.repository.JpaRepository; import java.util.*; public interface AttributeDefinitionRepository extends JpaRepository<AttributeDefinition,Long>{ Optional<AttributeDefinition> findByAttributeKey(String attributeKey);}
